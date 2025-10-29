@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Resultados — ScanKey</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script defer src="app.js"></script>
+</head>
+<body onload="renderResults()">
+  <header class="topbar">
+    <div class="brand">ScanKey</div>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="scan.html">Escanear</a>
+      <a href="results.html" class="active">Resultados</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>3 candidatos</h2>
+      <p id="confidenceBanner" class="banner"></p>
+      <div id="cards" class="cards"></div>
+
+      <div class="actions">
+        <a class="btn" href="scan.html">Volver a escanear</a>
+        <button class="btn secondary" onclick="openManual()">Corregir manualmente</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="manualModal" class="modal hidden">
+    <div class="modal-body">
+      <h3>Corrección manual</h3>
+      <form onsubmit="submitManual(event)">
+        <div class="row">
+          <label>Marca</label><input id="marca" placeholder="JMA / TESA / CISA"/>
+        </div>
+        <div class="row">
+          <label>Modelo</label><input id="modelo" placeholder="TE8I / TE8D / etc."/>
+        </div>
+        <div class="row">
+          <label>Tipo</label><input id="tipo" placeholder="plana / seguridad / tubular"/>
+        </div>
+        <div class="row">
+          <label>Orientación</label><input id="orientacion" placeholder="izquierda / derecha / simétrica"/>
+        </div>
+        <div class="row">
+          <label>OCR</label><input id="ocr_text" placeholder="Texto en cabezal (p.ej. TE8I)"/>
+        </div>
+        <div class="actions">
+          <button class="btn" type="button" onclick="closeManual()">Cancelar</button>
+          <button class="btn primary" type="submit">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <footer class="foot">© ScanKey Demo</footer>
+</body>
+</html>

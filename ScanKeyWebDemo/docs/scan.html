@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Escanear — ScanKey</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ScanKey</div>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="scan.html" class="active">Escanear</a>
+      <a href="results.html">Resultados</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Escanear llave (demo)</h2>
+      <p>Coloca la llave sobre fondo claro. En esta demo simulamos la captura.</p>
+
+      <div class="scan-box">
+        <div class="scan-frame"></div>
+        <div class="scan-hints">
+          <span>• Guía centrado</span>
+          <span>• Detección contorno</span>
+          <span>• OCR en cabezal</span>
+          <span>• Orientación L/R</span>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary" onclick="simulateScan()">Simular escaneo</button>
+        <a class="btn ghost" href="results.html">Ver últimos resultados</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">© ScanKey Demo</footer>
+</body>
+</html>

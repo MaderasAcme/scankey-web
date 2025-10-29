@@ -1,0 +1,96 @@
+{
+  "input_id": "example",
+  "timestamp": "2025-10-29T00:00:00Z",
+  "manufacturer_hint": {
+    "found": true,
+    "name": "JMA",
+    "confidence": 0.92
+  },
+  "results": [
+    {
+      "rank": 1,
+      "id_model_ref": "JMA_TE8I",
+      "type": "plana",
+      "brand": "JMA",
+      "model": "TE8I",
+      "orientation": "izquierda",
+      "head_color": "plateado",
+      "visual_state": "buena",
+      "patentada": false,
+      "compatibility_tags": [
+        "TESA_TE8",
+        "Silca_TE8"
+      ],
+      "confidence": 0.94,
+      "explain_text": "Coincide con perfil JMA TE8I, cabezal plano izquierdo",
+      "crop_bbox": {
+        "x": 0.1,
+        "y": 0.2,
+        "w": 0.7,
+        "h": 0.5
+      }
+    },
+    {
+      "rank": 2,
+      "id_model_ref": "TESA_TE8D",
+      "type": "plana",
+      "brand": "TESA",
+      "model": "TE8D",
+      "orientation": "derecha",
+      "head_color": "plateado",
+      "visual_state": "buena",
+      "patentada": false,
+      "compatibility_tags": [
+        "JMA_TE8"
+      ],
+      "confidence": 0.78,
+      "explain_text": "Coincidencia por contorno y familia TE8, posible derecha",
+      "crop_bbox": {
+        "x": 0.12,
+        "y": 0.2,
+        "w": 0.7,
+        "h": 0.5
+      }
+    },
+    {
+      "rank": 3,
+      "id_model_ref": "SILCA_TE8",
+      "type": "plana",
+      "brand": "SILCA",
+      "model": "TE8",
+      "orientation": "simétrica",
+      "head_color": "plateado",
+      "visual_state": "desgastada",
+      "patentada": false,
+      "compatibility_tags": [
+        "TE8 familia"
+      ],
+      "confidence": 0.62,
+      "explain_text": "Familia compatible; desgaste visible reduce score",
+      "crop_bbox": {
+        "x": 0.08,
+        "y": 0.22,
+        "w": 0.75,
+        "h": 0.48
+      }
+    }
+  ],
+  "low_confidence": false,
+  "high_confidence": false,
+  "should_store_sample": true,
+  "storage_probability": 0.75,
+  "current_samples_for_candidate": 12,
+  "manual_correction_hint": {
+    "fields": [
+      "marca",
+      "modelo",
+      "tipo",
+      "orientacion",
+      "ocr_text"
+    ]
+  },
+  "debug": {
+    "processing_time_ms": 240,
+    "model_version": "demo_v1"
+  }
+}

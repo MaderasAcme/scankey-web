@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ScanKey — Demo</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ScanKey</div>
+    <nav>
+      <a href="index.html" class="active">Inicio</a>
+      <a href="scan.html">Escanear</a>
+      <a href="results.html">Resultados</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="card hero">
+      <h1>Demo de identificación de llaves</h1>
+      <p>Prueba el flujo: <strong>Escanear → 3 candidatos → Aceptar / Corregir</strong>.</p>
+      <div class="actions">
+        <a class="btn primary" href="scan.html">Ir a escanear</a>
+        <a class="btn ghost" href="results.html">Ver resultados de ejemplo</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Precisión y confianza</h3>
+        <p>Mostramos 3 candidatos ordenados por <em>confidence</em>. Si el top ≥ 0.95: <b>high_confidence</b>. Si &lt; 0.60: <b>low_confidence</b>.</p>
+      </div>
+      <div class="card">
+        <h3>Reescaneo interno</h3>
+        <p>Si el resultado es dudoso, sugerimos reescaneo rápido con mejor framing/luz.</p>
+      </div>
+      <div class="card">
+        <h3>Privacidad</h3>
+        <p>No guardamos fotos sin DNI/consentimiento. Las patentadas requieren tarjeta.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">© ScanKey Demo</footer>
+</body>
+</html>

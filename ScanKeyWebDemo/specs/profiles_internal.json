@@ -1,0 +1,32 @@
+[
+  {
+    "id_profile": "JMA_TE8I_L",
+    "key_shape_signature": [
+      0.23,
+      0.88,
+      0.14,
+      0.44,
+      0.62
+    ],
+    "head_geometry": "rectangular",
+    "orientation_hint": "izquierda",
+    "pattern_class": "TE8",
+    "texture_index": "metal_brillante",
+    "last_training_samples": 18
+  },
+  {
+    "id_profile": "TESA_TE8D_R",
+    "key_shape_signature": [
+      0.25,
+      0.8,
+      0.18,
+      0.47,
+      0.6
+    ],
+    "head_geometry": "rectangular",
+    "orientation_hint": "derecha",
+    "pattern_class": "TE8",
+    "texture_index": "metal_brillante",
+    "last_training_samples": 12
+  }
+]
