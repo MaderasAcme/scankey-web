@@ -104,3 +104,90 @@
   </script>
 </body>
 </html>
+// ====== Cámara HTML5 (beta) ======
+let camStream = null;
+let currentBlob = null;  // si hay foto capturada, la usamos en lugar del input
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const btnOpenCam = document.getElementById('btnOpenCam');
+const btnShot = document.getElementById('btnShot');
+const btnCloseCam = document.getElementById('btnCloseCam');
+const previewImg = document.getElementById('previewImg'); // ya existe en tu página
+const fileInput = document.getElementById('fileInput');
+
+async function startCamera() {
+  try {
+      camStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" } },
+                  audio: false
+                      });
+                          video.srcObject = camStream;
+                              video.style.display = 'block';
+                                  btnShot.disabled = false;
+                                      btnCloseCam.disabled = true; // se habilita cuando el vídeo tenga tamaño
+                                          currentBlob = null; // resetea captura previa
+                                              previewImg.removeAttribute('src');
+                                                  previewImg.style.display = 'none';
+
+                                                      // Espera a que el vídeo tenga dimensiones reales
+                                                          video.onloadedmetadata = () => {
+                                                                btnCloseCam.disabled = false;
+                                                                    };
+                                                                      } catch (e) {
+                                                                          alert("No se pudo abrir la cámara: " + (e?.message || e));
+                                                                            }
+                                                                            }
+
+                                                                            function stopCamera() {
+                                                                              if (camStream) {
+                                                                                  camStream.getTracks().forEach(t => t.stop());
+                                                                                      camStream = null;
+                                                                                        }
+                                                                                          video.srcObject = null;
+                                                                                            video.style.display = 'none';
+                                                                                              btnShot.disabled = true;
+                                                                                                btnCloseCam.disabled = true;
+                                                                                                }
+
+                                                                                                btnOpenCam?.addEventListener('click', startCamera);
+                                                                                                btnCloseCam?.addEventListener('click', stopCamera);
+
+                                                                                                btnShot?.addEventListener('click', () => {
+                                                                                                  if (!video || !video.videoWidth) return;
+                                                                                                    const w = video.videoWidth;
+                                                                                                      const h = video.videoHeight;
+                                                                                                        canvas.width = w;
+                                                                                                          canvas.height = h;
+                                                                                                            const ctx = canvas.getContext('2d');
+                                                                                                              ctx.drawImage(video, 0, 0, w, h);
+                                                                                                                canvas.toBlob(blob => {
+                                                                                                                    if (!blob) return;
+                                                                                                                        currentBlob = blob;
+                                                                                                                            const url = URL.createObjectURL(blob);
+                                                                                                                                previewImg.src = url;
+                                                                                                                                    previewImg.style.display = 'block';
+                                                                                                                                      }, 'image/jpeg', 0.92);
+                                                                                                                                      });
+                                                                                                                                      
+                                                                                                                                      // ====== Hookear análisis para usar la foto de cámara si existe ======
+                                                                                                                                      async function getImageForAnalyze() {
+                                                                                                                                        // 1) prioriza la foto capturada desde la cámara
+                                                                                                                                          if (currentBlob instanceof Blob) return currentBlob;
+                                                                                                                                          
+                                                                                                                                            // 2) si no, usa el input file
+                                                                                                                                              if (fileInput?.files?.length) return fileInput.files[0];
+                                                                                                                                              
+                                                                                                                                                throw new Error("No hay imagen seleccionada ni capturada.");
+                                                                                                                                                }
+                                                                                                                                                
+                                                                                                                                                // Si tienes ya una función analyze() o similar, modifica la parte donde se crea el FormData:
+                                                                                                                                                window._sk_prepareFormData = async function(form) {
+                                                                                                                                                  // esta función la llamaremos justo antes de enviar
+                                                                                                                                                    const img = await getImageForAnalyze();
+                                                                                                                                                      form.append("image", img, "photo.jpg");
+                                                                                                                                                      };
+                                                                                                                                                      
+                                                                                                                                                      // En tu código de envío, justo antes de fetch(...):
+                                                                                                                                                      // const form = new FormData();
+                                                                                                                                                      // await window._sk_prepareFormData(form);
+                                                                                                                                                      // ... resto igual ...
