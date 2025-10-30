@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Escanear — ScanKey</title>
-  <link rel="stylesheet" href="styles.css"/>
-  <script defer src="app.js"></script>
+  <title>ScanKey – Escaneo IA</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="topbar">
@@ -18,27 +17,75 @@
   </header>
 
   <main class="container">
-    <section class="card">
-      <h2>Escanear llave (demo)</h2>
-      <p>Coloca la llave sobre fondo claro. En esta demo simulamos la captura.</p>
+    <section class="card hero">
+      <h1>Escanear llave</h1>
+      <p>Coloca la llave sobre fondo claro y sube una foto para identificarla.</p>
 
-      <div class="scan-box">
-        <div class="scan-frame"></div>
-        <div class="scan-hints">
-          <span>• Guía centrado</span>
-          <span>• Detección contorno</span>
-          <span>• OCR en cabezal</span>
-          <span>• Orientación L/R</span>
-        </div>
-      </div>
+      <!-- Input de cámara -->
+      <input type="file" id="fileInput" accept="image/*" capture="environment" />
+      <canvas id="previewCanvas" class="preview"></canvas>
 
       <div class="actions">
-        <button class="btn primary" onclick="simulateScan()">Simular escaneo</button>
-        <a class="btn ghost" href="results.html">Ver últimos resultados</a>
+        <button id="analyzeBtn" class="btn primary">🔍 Analizar llave</button>
       </div>
+    </section>
+
+    <section class="card" id="resultBox" style="display:none;">
+      <h2>Resultado IA</h2>
+      <pre id="resultText">(esperando...)</pre>
     </section>
   </main>
 
-  <footer class="foot">© ScanKey Demo</footer>
+  <footer class="foot">© ScanKey Demo Web</footer>
+
+  <script>
+  const API_URL = "https://scankey-mini-578907855193.europe-southwest1.run.app/analyze";
+  const API_KEY = "12345";
+  const input = document.getElementById("fileInput");
+  const canvas = document.getElementById("previewCanvas");
+  const ctx = canvas.getContext("2d");
+  const btn = document.getElementById("analyzeBtn");
+  const resultBox = document.getElementById("resultBox");
+  const resultText = document.getElementById("resultText");
+
+  let imageBlob = null;
+
+  input.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const img = new Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = 400 / img.width;
+      canvas.width = 400;
+      canvas.height = img.height * scale;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    imageBlob = file;
+  });
+
+  btn.addEventListener("click", async () => {
+    if (!imageBlob) {
+      alert("Por favor, selecciona o toma una foto primero.");
+      return;
+    }
+    resultBox.style.display = "block";
+    resultText.textContent = "Analizando llave...";
+    const form = new FormData();
+    form.append("image", imageBlob);
+    form.append("device_id", "web-demo");
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "X-API-Key": API_KEY },
+        body: form,
+      });
+      const data = await res.json();
+      resultText.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      resultText.textContent = "Error: " + err;
+    }
+  });
+  </script>
 </body>
 </html>
