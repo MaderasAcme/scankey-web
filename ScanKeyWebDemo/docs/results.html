@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8"/>
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Resultados — ScanKey</title>
+  <title>ScanKey — Resultados</title>
   <link rel="stylesheet" href="styles.css"/>
-  <script defer src="app.js"></script>
 </head>
 <body onload="renderResults()">
   <header class="topbar">
@@ -18,45 +17,106 @@
   </header>
 
   <main class="container">
-    <section class="card">
-      <h2>3 candidatos</h2>
-      <p id="confidenceBanner" class="banner"></p>
-      <div id="cards" class="cards"></div>
-
-      <div class="actions">
-        <a class="btn" href="scan.html">Volver a escanear</a>
-        <button class="btn secondary" onclick="openManual()">Corregir manualmente</button>
-      </div>
+    <section class="card hero">
+      <h1>Resultados de la IA</h1>
+      <p>Mostramos hasta 3 candidatos ordenados por <em>confianza</em>.</p>
+      <div id="confidenceBanner" class="banner">Cargando…</div>
     </section>
+
+    <section class="grid" id="cards">
+      <!-- Aquí se inyectan las tarjetas -->
+    </section>
+
+    <!-- Modal de corrección manual -->
+    <dialog id="manualDialog">
+      <form method="dialog" class="manual">
+        <h3>Corrección manual</h3>
+        <label>Marca <input id="marca" placeholder="JMA / TESA / SILCA"/></label>
+        <label>Modelo <input id="modelo" placeholder="TE8I / TE8D / …"/></label>
+        <label>Tipo <input id="tipo" placeholder="plana / gorja / tubular"/></label>
+        <label>Orientación <input id="orientacion" placeholder="izquierda / derecha / simétrica"/></label>
+        <label>Texto OCR <input id="ocr_text" placeholder="Texto impreso en cabeza"/></label>
+        <menu>
+          <button value="cancel">Cancelar</button>
+          <button id="manualSave" value="default">Guardar</button>
+        </menu>
+      </form>
+    </dialog>
   </main>
 
-  <div id="manualModal" class="modal hidden">
-    <div class="modal-body">
-      <h3>Corrección manual</h3>
-      <form onsubmit="submitManual(event)">
-        <div class="row">
-          <label>Marca</label><input id="marca" placeholder="JMA / TESA / CISA"/>
-        </div>
-        <div class="row">
-          <label>Modelo</label><input id="modelo" placeholder="TE8I / TE8D / etc."/>
-        </div>
-        <div class="row">
-          <label>Tipo</label><input id="tipo" placeholder="plana / seguridad / tubular"/>
-        </div>
-        <div class="row">
-          <label>Orientación</label><input id="orientacion" placeholder="izquierda / derecha / simétrica"/>
-        </div>
-        <div class="row">
-          <label>OCR</label><input id="ocr_text" placeholder="Texto en cabezal (p.ej. TE8I)"/>
-        </div>
-        <div class="actions">
-          <button class="btn" type="button" onclick="closeManual()">Cancelar</button>
-          <button class="btn primary" type="submit">Guardar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <footer class="foot">© ScanKey Demo</footer>
+
+  <script>
+    // ——— util: banderas de confianza
+    function applyFlags(payload){
+      const top = payload?.results?.[0]?.confidence ?? 0;
+      payload.high_confidence = top >= 0.95;
+      payload.low_confidence  = top < 0.60;
+      payload.should_store_sample = top >= 0.75;
+      return payload;
+    }
+
+    // ——— pinta las tarjetas
+    function renderResults(){
+      // Prioridad: 1) último resultado guardado por scan.html 2) ejemplo embebido
+      const fromLS = localStorage.getItem("sk_last_result");
+      const payload = applyFlags(fromLS ? JSON.parse(fromLS) : demoFallback());
+
+      const banner = document.getElementById("confidenceBanner");
+      if(payload.high_confidence){ banner.className = "banner ok"; banner.textContent = "Alta confianza: puedes aceptar directamente."; }
+      else if(payload.low_confidence){ banner.className = "banner bad"; banner.textContent = "Confianza baja: recomendamos corrección manual."; }
+      else { banner.className = "banner warn"; banner.textContent = "Confianza media: revisa los 3 candidatos."; }
+
+      const cards = document.getElementById("cards");
+      cards.innerHTML = "";
+
+      (payload.results || []).slice(0,3).forEach((r, idx) => {
+        const el = document.createElement("article");
+        el.className = "card result-card";
+        el.innerHTML = `
+          <div class="tag">#${idx+1} • ${r.type || "-"} • ${r.brand || "-"} ${r.model || "-"}</div>
+          <h3>${r.id_model_ref || `${r.brand}_${r.model}`}</h3>
+          <p><b>Orientación:</b> ${r.orientation || "—"}</p>
+          <p><b>Estado:</b> ${r.visual_state || "—"} • <b>Patentada:</b> ${r.patentada ? "sí" : "no"}</p>
+          <p><b>Compatibilidad:</b> ${(r.compatibility_tags || []).join(", ") || "—"}</p>
+          <p class="score">Confianza: ${(r.confidence*100).toFixed(1)}%</p>
+          <p class="muted">${r.explain_text || ""}</p>
+          <div class="actions">
+            <button class="btn primary" onclick='accept("${r.id_model_ref || ""}")'>Elegir esta</button>
+            <button class="btn ghost" onclick="openManual()">Corregir manual</button>
+          </div>
+        `;
+        cards.appendChild(el);
+      });
+    }
+
+    function accept(id){
+      alert(`Seleccionado: ${id}\n(En la app real aquí seguiría el flujo de taller/duplicado)`);
+    }
+
+    function openManual(){ document.getElementById("manualDialog").showModal(); }
+    document.getElementById("manualSave").addEventListener("click", () => {
+      const payload = {
+        marca: document.getElementById("marca").value || null,
+        modelo: document.getElementById("modelo").value || null,
+        tipo: document.getElementById("tipo").value || null,
+        orientacion: document.getElementById("orientacion").value || null,
+        ocr_text: document.getElementById("ocr_text").value || null,
+      };
+      console.log("Corrección manual:", payload);
+      alert("Guardado (demo). ¡Gracias!");
+    });
+
+    // ——— fallback de ejemplo (si aún no hay nada en localStorage)
+    function demoFallback(){
+      return {
+        results: [
+          { id_model_ref:"JMA_TE8I", type:"plana", brand:"JMA", model:"TE8I", orientation:"izquierda", patentada:false, visual_state:"buena", compatibility_tags:["TESA_TE8","SILCA_TE8"], confidence:0.94, explain_text:"Perfil TE8 con OCR que sugiere TE8I." },
+          { id_model_ref:"TESA_TE8D", type:"plana", brand:"TESA", model:"TE8D", orientation:"derecha", patentada:false, visual_state:"buena", compatibility_tags:["JMA_TE8"], confidence:0.78, explain_text:"Coincidencia por contorno + familia TE8." },
+          { id_model_ref:"SILCA_TE8", type:"plana", brand:"SILCA", model:"TE8", orientation:"simétrica", patentada:false, visual_state:"desgastada", compatibility_tags:["familia TE8"], confidence:0.62, explain_text:"Similar por familia; desgaste reduce score." }
+        ]
+      };
+    }
+  </script>
 </body>
 </html>
