@@ -3,8 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ScanKey – Escaneo IA</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>ScanKey — Escanear</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .preview { width:100%; max-width:420px; aspect-ratio:4/3; object-fit:cover; border-radius:14px; border:1px solid #2b2c34; }
+    .box { display:flex; flex-direction:column; gap:12px; align-items:center; }
+    .hint { color:#a1a1aa; font-size:.9rem; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size:.9rem; white-space:pre-wrap; }
+  </style>
 </head>
 <body>
   <header class="topbar">
@@ -17,75 +23,84 @@
   </header>
 
   <main class="container">
-    <section class="card hero">
-      <h1>Escanear llave</h1>
-      <p>Coloca la llave sobre fondo claro y sube una foto para identificarla.</p>
+    <section class="card">
+      <h1>Escanear llave (demo web)</h1>
+      <p class="hint">Consejo: coloca la llave sobre fondo claro, usa buena luz y enfoca el contorno.</p>
 
-      <!-- Input de cámara -->
-      <input type="file" id="fileInput" accept="image/*" capture="environment" />
-      <canvas id="previewCanvas" class="preview"></canvas>
+      <div class="box">
+        <input id="file" type="file" accept="image/*" capture="environment" />
+        <img id="preview" class="preview" alt="Vista previa" />
 
-      <div class="actions">
-        <button id="analyzeBtn" class="btn primary">🔍 Analizar llave</button>
+        <div class="actions">
+          <button class="btn" id="btnAnalyze">Analizar llave</button>
+          <a class="btn ghost" href="results.html">Ver últimos resultados</a>
+        </div>
+
+        <details class="card" style="max-width:800px; width:100%;">
+          <summary><b>Última respuesta del backend</b></summary>
+          <pre id="out" class="mono">—</pre>
+        </details>
       </div>
-    </section>
-
-    <section class="card" id="resultBox" style="display:none;">
-      <h2>Resultado IA</h2>
-      <pre id="resultText">(esperando...)</pre>
     </section>
   </main>
 
-  <footer class="foot">© ScanKey Demo Web</footer>
+  <footer class="foot">© ScanKey Demo</footer>
 
   <script>
-  const API_URL = "https://scankey-mini-578907855193.europe-southwest1.run.app/analyze";
-  const API_KEY = "12345";
-  const input = document.getElementById("fileInput");
-  const canvas = document.getElementById("previewCanvas");
-  const ctx = canvas.getContext("2d");
-  const btn = document.getElementById("analyzeBtn");
-  const resultBox = document.getElementById("resultBox");
-  const resultText = document.getElementById("resultText");
+    // === Config API (ajustada a tu servicio en Cloud Run) ===
+    const API_URL = "https://scankey-mini-578907855193.europe-southwest1.run.app/analyze";
+    const API_KEY = "12345";
 
-  let imageBlob = null;
+    const $file = document.getElementById("file");
+    const $preview = document.getElementById("preview");
+    const $btn = document.getElementById("btnAnalyze");
+    const $out = document.getElementById("out");
 
-  input.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const img = new Image();
-    img.src = URL.createObjectURL(file);
-    img.onload = () => {
-      const scale = 400 / img.width;
-      canvas.width = 400;
-      canvas.height = img.height * scale;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    };
-    imageBlob = file;
-  });
+    // Vista previa de la imagen
+    $file.addEventListener("change", () => {
+      const f = $file.files?.[0];
+      if (!f) { $preview.src = ""; return; }
+      const url = URL.createObjectURL(f);
+      $preview.src = url;
+    });
 
-  btn.addEventListener("click", async () => {
-    if (!imageBlob) {
-      alert("Por favor, selecciona o toma una foto primero.");
-      return;
-    }
-    resultBox.style.display = "block";
-    resultText.textContent = "Analizando llave...";
-    const form = new FormData();
-    form.append("image", imageBlob);
-    form.append("device_id", "web-demo");
-    try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: { "X-API-Key": API_KEY },
-        body: form,
-      });
-      const data = await res.json();
-      resultText.textContent = JSON.stringify(data, null, 2);
-    } catch (err) {
-      resultText.textContent = "Error: " + err;
-    }
-  });
+    // Analizar (subir a la API)
+    $btn.addEventListener("click", async () => {
+      const f = $file.files?.[0];
+      if (!f) { alert("Selecciona una foto primero."); return; }
+
+      const form = new FormData();
+      form.append("image", f, f.name || "photo.jpg");
+      form.append("device_id", "gh-pages-demo");
+      form.append("side", "A");
+      form.append("force_ocr", "false");
+
+      $btn.disabled = true;
+      $btn.textContent = "Analizando…";
+
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "X-API-Key": API_KEY },
+          body: form
+        });
+
+        if (!res.ok) {
+          const txt = await res.text();
+          throw new Error(`HTTP ${res.status}: ${txt}`);
+        }
+
+        const data = await res.json();
+        // 🔥 Guardar para la pantalla de resultados
+        localStorage.setItem("sk_last_result", JSON.stringify(data));
+        $out.textContent = JSON.stringify(data, null, 2);
+      } catch (e) {
+        $out.textContent = "Error: " + (e?.message || e);
+      } finally {
+        $btn.disabled = false;
+        $btn.textContent = "Analizar llave";
+      }
+    });
   </script>
 </body>
 </html>
